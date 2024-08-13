@@ -6,6 +6,7 @@ import ua.klymenko.tutor_crm.entities.Student;
 import ua.klymenko.tutor_crm.repositories.StudentRepository;
 import ua.klymenko.tutor_crm.services.interfaces.StudentService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +21,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Student save(Student student) {
+        student.setBalance(BigDecimal.ZERO);
         return studentRepository.save(student);
     }
 

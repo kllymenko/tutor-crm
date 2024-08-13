@@ -1,9 +1,16 @@
 package ua.klymenko.tutor_crm.controllers;
 
+import jakarta.persistence.EntityNotFoundException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ua.klymenko.tutor_crm.dto.PaymentDto;
 import ua.klymenko.tutor_crm.entities.Payment;
+import ua.klymenko.tutor_crm.entities.Student;
+import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.services.interfaces.PaymentService;
+import ua.klymenko.tutor_crm.services.interfaces.StudentService;
+import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
 import java.util.List;
 
@@ -12,10 +19,16 @@ import java.util.List;
 @RequestMapping("/api/payments")
 public class PaymentController {
     private final PaymentService paymentService;
+    private final UserService userService;
+    private final StudentService studentService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public PaymentController(PaymentService paymentService) {
+    public PaymentController(PaymentService paymentService, UserService userService, StudentService studentService, ModelMapper modelMapper) {
         this.paymentService = paymentService;
+        this.userService = userService;
+        this.studentService = studentService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping
@@ -30,20 +43,35 @@ public class PaymentController {
     }
 
     @PostMapping
-    public Payment createPayment(@RequestBody Payment payment) {
+    public Payment createPayment(@RequestBody PaymentDto paymentDto) {
+        User existingTutor = userService.getById(paymentDto.getTutor_id()).orElseThrow(()
+                -> new EntityNotFoundException("User not found with id: " + paymentDto.getTutor_id()));
+        Student existingStudent = studentService.getById(paymentDto.getStudent_id()).orElseThrow(()
+                -> new EntityNotFoundException("Student not found with id: " + paymentDto.getStudent_id()));
+
+        existingStudent.setBalance(existingStudent.getBalance().add(paymentDto.getAmount()));
+
+        Payment payment = convertToEntity(paymentDto, existingTutor, existingStudent);
         return paymentService.save(payment);
     }
 
     @PutMapping("/{id}")
-    public Payment updatePayment(@PathVariable("id") Long paymentId, @RequestBody Payment payment) {
-        if (!paymentId.equals(payment.getId())) {
+    public Payment updatePayment(@PathVariable("id") Long paymentId, @RequestBody PaymentDto paymentDto) {
+        if (!paymentId.equals(paymentDto.getId())) {
             throw new IllegalArgumentException("User ID in path must match the ID in the request body");
         }
-        return paymentService.save(payment);
+        return paymentService.save(modelMapper.map(paymentDto, Payment.class));
     }
 
     @DeleteMapping("/{id}")
     public void deletePayment(@PathVariable("id") Long paymentId) {
         paymentService.delete(paymentId);
+    }
+
+    private Payment convertToEntity(PaymentDto paymentDto, User tutor, Student student) {
+        Payment payment = modelMapper.map(paymentDto, Payment.class);
+        payment.setTutor(tutor);
+        payment.setStudent(student);
+        return payment;
     }
 }

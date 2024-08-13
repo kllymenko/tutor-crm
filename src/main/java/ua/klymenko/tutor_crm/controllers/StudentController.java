@@ -10,6 +10,7 @@ import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.services.interfaces.StudentService;
 import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @CrossOrigin
@@ -40,10 +41,11 @@ public class StudentController {
 
     @PostMapping
     public Student createStudent(@RequestBody StudentDto studentDto) {
-        User existingUser = userService.getById(studentDto.getTutor_id()).orElseThrow(()
+        User existingTutor = userService.getById(studentDto.getTutor_id()).orElseThrow(()
                 -> new EntityNotFoundException("User not found with id: " + studentDto.getTutor_id()));
-        Student student = modelMapper.map(studentDto, Student.class);
-        student.setTutor(existingUser);
+
+        Student student = convertToEntity(studentDto, existingTutor);
+
         return studentService.save(student);
     }
 
@@ -58,5 +60,11 @@ public class StudentController {
     @DeleteMapping("/{id}")
     public void deleteStudent(@PathVariable("id") Long studentId) {
         studentService.delete(studentId);
+    }
+
+    private Student convertToEntity(StudentDto studentDto, User tutor) {
+        Student student = modelMapper.map(studentDto, Student.class);
+        student.setTutor(tutor);
+        return student;
     }
 }

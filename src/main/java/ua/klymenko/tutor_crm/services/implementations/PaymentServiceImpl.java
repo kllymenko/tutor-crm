@@ -9,6 +9,7 @@ import ua.klymenko.tutor_crm.entities.Payment;
 import ua.klymenko.tutor_crm.repositories.PaymentRepository;
 import ua.klymenko.tutor_crm.services.interfaces.PaymentService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment save(Payment payment) {
+        payment.setTime(Instant.now());
         return paymentRepository.save(payment);
     }
 

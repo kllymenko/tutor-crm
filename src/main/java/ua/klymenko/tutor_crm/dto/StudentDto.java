@@ -1,5 +1,7 @@
 package ua.klymenko.tutor_crm.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -10,10 +12,16 @@ import java.math.BigDecimal;
  */
 @Value
 public class StudentDto implements Serializable {
-    Long id;
+    Integer id;
     Long tutor_id;
+    @NotNull
+    @Size(max = 64)
     String name;
+    @Size(max = 64)
     String surname;
+    @NotNull
+    @Size(max = 20)
     String phone;
+    @NotNull
     BigDecimal pricePerLesson;
 }

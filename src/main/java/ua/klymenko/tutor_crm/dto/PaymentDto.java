@@ -16,6 +16,5 @@ public class PaymentDto implements Serializable {
     Long tutor_id;
     Long student_id;
     BigDecimal amount;
-    Instant time;
     PaymentMethod method;
 }
