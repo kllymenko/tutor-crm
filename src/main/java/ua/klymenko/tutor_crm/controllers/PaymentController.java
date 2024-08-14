@@ -45,13 +45,12 @@ public class PaymentController {
     @PostMapping
     public Payment createPayment(@RequestBody PaymentDto paymentDto) {
         User existingTutor = userService.getById(paymentDto.getTutor_id()).orElseThrow(()
-                -> new EntityNotFoundException("User not found with id: " + paymentDto.getTutor_id()));
+                -> new EntityNotFoundException("Tutor not found with id: " + paymentDto.getTutor_id()));
         Student existingStudent = studentService.getById(paymentDto.getStudent_id()).orElseThrow(()
                 -> new EntityNotFoundException("Student not found with id: " + paymentDto.getStudent_id()));
 
-        existingStudent.setBalance(existingStudent.getBalance().add(paymentDto.getAmount()));
-
         Payment payment = convertToEntity(paymentDto, existingTutor, existingStudent);
+
         return paymentService.save(payment);
     }
 

@@ -39,7 +39,7 @@ public class Lesson {
     @Column(name = "time_end", nullable = false)
     private Instant timeEnd;
 
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private LessonStatus status;
 
@@ -48,9 +48,6 @@ public class Lesson {
     private String summary;
 
     @Column(name = "is_paid", nullable = false)
-    private Boolean isPaid;
-
-    @Column(name = "hours_worked", nullable = false)
-    private Integer hoursWorked;
+    private Boolean isPaid = false;
 
 }

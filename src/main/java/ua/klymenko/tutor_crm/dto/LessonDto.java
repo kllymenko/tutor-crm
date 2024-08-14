@@ -15,11 +15,9 @@ public class LessonDto implements Serializable {
     Long id;
     Long tutor_id;
     Long student_id;
-    Long subject_id;
+    String subject;
     Instant timeStart;
     Instant timeEnd;
-    LessonStatus status;
+    String status;
     String summary;
-    Byte isPaid;
-    Integer hoursWorked;
 }

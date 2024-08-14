@@ -36,7 +36,7 @@ public class Payment {
     @Column(name = "time", nullable = false)
     private Instant time;
 
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "method", nullable = false)
     private PaymentMethod method;
 

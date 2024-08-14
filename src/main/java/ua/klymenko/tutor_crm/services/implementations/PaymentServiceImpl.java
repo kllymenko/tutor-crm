@@ -25,6 +25,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment save(Payment payment) {
+        payment.getStudent().setBalance(payment.getStudent().getBalance().add(payment.getAmount()));
         payment.setTime(Instant.now());
         return paymentRepository.save(payment);
     }
