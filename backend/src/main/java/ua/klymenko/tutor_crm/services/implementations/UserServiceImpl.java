@@ -1,6 +1,8 @@
 package ua.klymenko.tutor_crm.services.implementations;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.repositories.UserRepository;
@@ -36,5 +38,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public UserDetailsService userDetailsService() {
+        return this::getByEmail;
+    }
+
+    @Override
+    public User getByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Користувача з email " + email + " не знайдено"));
     }
 }
