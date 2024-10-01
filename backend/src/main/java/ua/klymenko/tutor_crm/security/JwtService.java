@@ -21,13 +21,13 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret.key}")
+    @Value("${security.jwt.token.secret}")
     private String accessTokenSecret;
 
-    @Value("${jwt.access.expiration.minutes}")
+    @Value("${security.jwt.token.expiration.access}")
     private Long accessTokenExpirationMinutes;
 
-    @Value("${jwt.refresh.expiration.minutes}")
+    @Value("${security.jwt.token.expiration.refresh}")
     private Long refreshTokenExpirationMinutes;
 
     private static final String BEARER_PREFIX = "Bearer ";
