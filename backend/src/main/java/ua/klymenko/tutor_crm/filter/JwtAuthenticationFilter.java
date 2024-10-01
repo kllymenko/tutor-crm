@@ -20,7 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ua.klymenko.tutor_crm.dto.responses.MessageResponse;
+import ua.klymenko.tutor_crm.dto.response.MessageResponse;
 import ua.klymenko.tutor_crm.security.JwtService;
 import ua.klymenko.tutor_crm.services.interfaces.UserService;
 

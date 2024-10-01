@@ -1,4 +1,4 @@
-package ua.klymenko.tutor_crm.dto.responses;
+package ua.klymenko.tutor_crm.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

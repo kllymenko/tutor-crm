@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import ua.klymenko.tutor_crm.dto.responses.MessageResponse;
+import ua.klymenko.tutor_crm.dto.response.MessageResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {

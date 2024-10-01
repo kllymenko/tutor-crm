@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import axios from "../api/axios";
 
-import axios from '../api/axios';
-const LOGIN_URL = '/auth';
+const LOGIN_URL = '/auth/login';
 
 const Login = () => {
     const { setAuth } = useAuth();
@@ -34,7 +34,7 @@ const Login = () => {
             const response = await axios.post(LOGIN_URL,
                 JSON.stringify({ user, pwd }),
                 {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     withCredentials: true
                 }
             );
@@ -68,8 +68,8 @@ const Login = () => {
             <form onSubmit={handleSubmit}>
                 <label htmlFor="username">Username:</label>
                 <input
-                    type="text"
-                    id="username"
+                    type="email"
+                    id="email"
                     ref={userRef}
                     autoComplete="off"
                     onChange={(e) => setUser(e.target.value)}
