@@ -5,11 +5,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ua.klymenko.tutor_crm.dto.request.RegisterRequest;
 import ua.klymenko.tutor_crm.dto.response.LoginResponse;
 import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.exception.JwtTokenException;
 import ua.klymenko.tutor_crm.security.JwtService;
 import ua.klymenko.tutor_crm.services.interfaces.UserService;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -35,20 +38,16 @@ public class AuthenticationService {
         return new LoginResponse(accessToken, refreshToken);
     }
 
-//    public User register(RegisterRequest request) {
-//        return userService.create(User.builder()
-//                .login(request.getLogin())
-//                .email(request.getEmail())
-//                .passwordHash(passwordEncoder.encode(request.getPassword()))
-//                .role(String.valueOf(UserRole.PLAYER))
-//                .isBanned(false)
-//                .isEnabled(false)
-//                .gameWinCount(0L)
-//                .gameLoseCount(0L)
-//                .gameCount(0L)
-//                .coinsTotal(0L)
-//                .build());
-//    }
+    public User register(RegisterRequest request) {
+        return userService.create(User.builder()
+                .email(request.getEmail())
+                .name(request.getName())
+                .surname(request.getSurname())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .phone(request.getPhone())
+                .createdAt(LocalDateTime.now())
+                .build());
+    }
 
     public LoginResponse refreshToken(String refreshToken) {
         if (!jwtService.isRefreshToken(refreshToken))
@@ -61,6 +60,7 @@ public class AuthenticationService {
         String newRefreshToken = jwtService.generateRefreshToken(user);
         return new LoginResponse(newAccessToken, newRefreshToken);
     }
+
 
 //    public boolean confirmRegistration(String confirmationCode) {
 //        User user = userService.getByConfirmationCode(confirmationCode);

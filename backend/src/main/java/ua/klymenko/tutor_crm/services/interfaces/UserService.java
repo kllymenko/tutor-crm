@@ -7,4 +7,5 @@ import ua.klymenko.tutor_crm.services.Service;
 public interface UserService extends Service<User> {
     UserDetailsService userDetailsService();
     User getByEmail(String email);
+    User create(User user);
 }

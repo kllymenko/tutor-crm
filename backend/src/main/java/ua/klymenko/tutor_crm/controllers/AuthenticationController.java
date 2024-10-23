@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.klymenko.tutor_crm.dto.request.LoginRequest;
+import ua.klymenko.tutor_crm.dto.request.RegisterRequest;
 import ua.klymenko.tutor_crm.dto.response.LoginResponse;
 import ua.klymenko.tutor_crm.dto.response.MessageResponse;
 import ua.klymenko.tutor_crm.entities.User;
@@ -24,16 +25,16 @@ public class AuthenticationController {
 
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<LoginResponse> loginUser(@ModelAttribute LoginRequest loginRequest) {
+        System.out.println(loginRequest);
         LoginResponse response = authenticationService.login(loginRequest.getEmail(), loginRequest.getPassword());
         return ResponseEntity.ok(response);
     }
 
-//    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-//    public ResponseEntity<MessageResponse> registerUser(@ModelAttribute RegisterRequest registerDTO) {
-//        User registered = authenticationService.register(registerDTO);
-//        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered));
-//        return new ResponseEntity<>(new MessageResponse("User registered"), HttpStatus.CREATED);
-//    }
+    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<MessageResponse> registerUser(@ModelAttribute RegisterRequest registerDTO) {
+        User registered = authenticationService.register(registerDTO);
+        return new ResponseEntity<>(new MessageResponse("User registered"), HttpStatus.CREATED);
+    }
 
     @PostMapping(value = "/refresh")
     public ResponseEntity<LoginResponse> refreshToken(@RequestHeader(value = "Authorization") String authorizationHeader) {
