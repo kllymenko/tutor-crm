@@ -67,9 +67,9 @@ public class PaymentController {
         paymentService.delete(paymentId);
     }
 
-    private Payment convertToEntity(PaymentDto paymentDto, User tutor, Student student) {
+    private Payment convertToEntity(PaymentDto paymentDto, User user, Student student) {
         Payment payment = modelMapper.map(paymentDto, Payment.class);
-        payment.setTutor(tutor);
+        payment.setUser(user);
         payment.setStudent(student);
         return payment;
     }

@@ -25,8 +25,8 @@ public class Student {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "tutor_id", nullable = false)
-    private User tutor;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Size(max = 64)
     @NotNull

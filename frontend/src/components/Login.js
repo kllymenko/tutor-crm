@@ -1,12 +1,9 @@
 import {useRef, useState, useEffect} from 'react';
-import useAuth from '../hooks/useAuth';
 import {Link, useNavigate, useLocation} from 'react-router-dom';
-import axios from "../api/axios";
 
 const LOGIN_URL = '/auth/login';
 
 const Login = () => {
-    const {setAuth} = useAuth();
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -29,36 +26,37 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const params = new URLSearchParams();
+        params.append("email", email);
+        params.append("password", password);
+        fetch("http://localhost:8080/auth/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: params.toString()
+        }).then(response => {
+            if (response.ok) {
+                return response.json().then(data => {
+                    localStorage.setItem('accessToken', data.access_token);
+                    localStorage.setItem('refreshToken', data.refresh_token);
 
-        try {
-            const params = new URLSearchParams();
-            params.append('email', email);
-            params.append('password', password);
+                    console.log(data);
+                    navigate('/lessons');
+                    window.location.reload();
 
-            const response = await axios.post(LOGIN_URL,
-                params,
-                {
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    withCredentials: true
-                }
-            );
-            console.log(JSON.stringify(response?.data));
-            //console.log(JSON.stringify(response));
-            const accessToken = response?.data?.accessToken;
-            setEmail('');
-            setPassword('');
-            navigate('/home');
-        } catch (err) {
-            if (err.response?.status === 400) {
-                setErrMsg('Missing Username or Password');
-            } else if (err.response?.status === 401) {
-                setErrMsg('Unauthorized');
+                });
+            } else if (response.status === 401) {
+                return response.json().then(errorData => {
+                    setErrMsg(errorData.message);
+                });
             } else {
-                console.log(err)
-                setErrMsg('Login Failed');
+                return response.json().then(() => {
+                    setErrMsg("Виникла помилка. Будь ласка, спробуйте пізніше.");
+                    throw new Error("Network response was not ok.");
+                });
             }
-            errRef.current.focus();
-        }
+        }).catch(error => {
+            console.error("There was a problem with the fetch operation:", error);
+        });
     }
 
     return (

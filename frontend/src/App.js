@@ -5,11 +5,12 @@ import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 
 // PAGES
 import Navbar from "./components/navbar/Navbar";
-import Home from "./components/Home";
-import Products from "./components/Products";
-import Reports from "./components/Reports";
+import Lessons from "./components/Lessons";
+import Students from "./components/Students";
 import Login from "./components/Login";
 import Registration from "./components/Registration";
+import AddLesson from "./components/AddLesson";
+import AddStudent from "./components/AddStudent";
 
 export default function App() {
     return (
@@ -18,9 +19,10 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<Login/>} />
                     <Route path="/registration" element={<Registration/>} />
-                    <Route path="/home" element={<Home/>} />
-                    <Route path="/products"  element={<Products/>} />
-                    <Route path="/reports"  element={<Reports/>} />
+                    <Route path="/lessons" element={<Lessons/>} />
+                    <Route path="/students"  element={<Students/>} />
+                    <Route path="/add-lesson" element={<AddLesson/>} />
+                    <Route path="/add-student" element={<AddStudent/>} />
                 </Routes>
             </Router>
         </div>

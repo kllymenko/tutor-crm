@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from "../api/axios";
 
 const REGISTER_URL = '/auth/register';
 
@@ -14,8 +13,9 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
     const [confirmPwd, setConfirmPwd] = useState('');
-    const [errMsg, setErrMsg] = useState('');
-    const [success, setSuccess] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -24,55 +24,63 @@ const Register = () => {
     }, [])
 
     useEffect(() => {
-        setErrMsg('');
+        setErrors('');
     }, [email, name, surname, password, phone])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (password !== confirmPwd) {
-            setErrMsg('Passwords do not match');
+            setErrors('Passwords do not match');
             return;
         }
 
-        try {
             const params = new URLSearchParams();
             params.append('email', email);
             params.append('name', name);
             params.append('surname', surname);
             params.append('password', password);
             params.append('phone', phone);
-            const response = await axios.post(REGISTER_URL,
-                params,
-                {
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    withCredentials: true
+        fetch('http://localhost:8080/auth/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: params.toString(),
+        })
+            .then((response) => {
+                setIsLoading(false);
+                if (response.ok) {
+                    return response.json().then((data) => {
+                        setSuccessMessage(
+                            'Реєстрація пройшла успішно. Будь ласка, перевірте свою електронну пошту для підтвердження акаунту.'
+                        );
+                        setEmail('');
+                        setName('');
+                        setSurname('');
+                        setPassword('');
+                        setConfirmPwd('');
+                        setPhone('')
+                        setErrors({});
+                    });
+                } else if (response.status === 400) {
+                    return response.json().then((errorData) => {
+                        setErrors({general: errorData.message});
+                    });
+                } else {
+                    return response.json().then(() => {
+                        setErrors({general: 'Виникла помилка. Будь ласка, спробуйте пізніше.'});
+                    });
                 }
-            );
-            console.log(JSON.stringify(response?.data));
-            setSuccess(true);
-            setEmail('');
-            setPassword('');
-            setConfirmPwd('');
-            navigate('/'); // Перенаправлення на сторінку входу після реєстрації
-        } catch (err) {
-            if (!err?.response) {
-                setErrMsg('No Server Response');
-            } else if (err.response?.status === 400) {
-                setErrMsg('Missing Username or Password');
-            } else if (err.response?.status === 409) {
-                setErrMsg('Username Taken');
-            } else {
-                setErrMsg('Registration Failed');
-            }
-            errRef.current.focus();
-        }
+            })
+            .catch((error) => {
+                setIsLoading(false);
+                console.error('There was a problem with the fetch operation:', error);
+            });
     }
 
     return (
         <section className="login-container">
-            <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">
-                {errMsg}
+            <p  className={errors ? "errors" : "offscreen"} aria-live="assertive">
+                {errors}
             </p>
             <h1 className="login-title">Sign Up</h1>
             <form onSubmit={handleSubmit} className="login-form">

@@ -3,6 +3,7 @@ package ua.klymenko.tutor_crm.controllers;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ua.klymenko.tutor_crm.dto.StudentDto;
 import ua.klymenko.tutor_crm.entities.Student;
@@ -40,11 +41,10 @@ public class StudentController {
     }
 
     @PostMapping
-    public Student createStudent(@RequestBody StudentDto studentDto) {
-        User existingTutor = userService.getById(studentDto.getTutor_id()).orElseThrow(()
-                -> new EntityNotFoundException("User not found with id: " + studentDto.getTutor_id()));
-
-        Student student = convertToEntity(studentDto, existingTutor);
+    public Student createStudent(@AuthenticationPrincipal User user, @RequestBody StudentDto studentDto) {
+        System.out.println(user.getEmail());
+        System.out.println(studentDto);
+        Student student = convertToEntity(studentDto, user);
 
         return studentService.save(student);
     }
@@ -62,9 +62,9 @@ public class StudentController {
         studentService.delete(studentId);
     }
 
-    private Student convertToEntity(StudentDto studentDto, User tutor) {
+    private Student convertToEntity(StudentDto studentDto, User user) {
         Student student = modelMapper.map(studentDto, Student.class);
-        student.setTutor(tutor);
+        student.setUser(user);
         return student;
     }
 }

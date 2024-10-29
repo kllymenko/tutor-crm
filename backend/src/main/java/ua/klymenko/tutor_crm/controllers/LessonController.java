@@ -70,9 +70,9 @@ public class LessonController {
         lessonService.delete(lessonId);
     }
 
-    private Lesson convertToEntity(LessonDto lessonDto, User tutor, Student student, Subject subject) {
+    private Lesson convertToEntity(LessonDto lessonDto, User user, Student student, Subject subject) {
         Lesson lesson = modelMapper.map(lessonDto, Lesson.class);
-        lesson.setTutor(tutor);
+        lesson.setUser(user);
         lesson.setStudent(student);
         lesson.setSubject(subject);
         return lesson;

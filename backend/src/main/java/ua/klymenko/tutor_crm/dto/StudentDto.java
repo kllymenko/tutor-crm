@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 @Value
 public class StudentDto implements Serializable {
     Integer id;
-    Long tutor_id;
     @NotNull
     @Size(max = 64)
     String name;
