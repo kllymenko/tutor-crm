@@ -13,7 +13,7 @@ export default function AddStudent() {
         name: "",
         surname: "",
         phone: "",
-        pricePerLesson: ""
+        price_per_lesson: ""
     });
 
     const handleChange = (e) => {
@@ -35,12 +35,12 @@ export default function AddStudent() {
         try {
             const response = await api.post(STUDENTS_URL, JSON.stringify(StudentDto), {
                 headers: {
-                    'Content-Type': 'application/json', // Set the content type to JSON
+                    'Content-Type': 'application/json',
                 },
             });
-
+            console.log(response)
             setIsLoading(false);
-            if (!response.ok) {
+            if (!response.status === 200) {
                 throw new Error("Не вдалося зберегти студента");
             }
 
@@ -50,7 +50,7 @@ export default function AddStudent() {
                 name: "",
                 surname: "",
                 phone: "",
-                pricePerLesson: ""
+                price_per_lesson: ""
             });
         } catch (error) {
             setIsLoading(false);
@@ -110,8 +110,8 @@ export default function AddStudent() {
                         <label>Ціна за урок:</label>
                         <input
                             type="number"
-                            name="pricePerLesson"
-                            value={StudentDto.pricePerLesson}
+                            name="price_per_lesson"
+                            value={StudentDto.price_per_lesson}
                             onChange={handleChange}
                             placeholder="Введіть ціну за урок"
                             required

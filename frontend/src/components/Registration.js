@@ -21,66 +21,63 @@ const Register = () => {
 
     useEffect(() => {
         userRef.current.focus();
-    }, [])
+    }, []);
 
     useEffect(() => {
-        setErrors('');
-    }, [email, name, surname, password, phone])
+        setErrors({});
+    }, [email, name, surname, password, phone, confirmPwd]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (password !== confirmPwd) {
-            setErrors('Passwords do not match');
+            setErrors({ passwordMatch: 'Passwords do not match' });
             return;
         }
 
-            const params = new URLSearchParams();
-            params.append('email', email);
-            params.append('name', name);
-            params.append('surname', surname);
-            params.append('password', password);
-            params.append('phone', phone);
-        fetch('http://localhost:8080/auth/register', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: params.toString(),
-        })
-            .then((response) => {
-                setIsLoading(false);
-                if (response.ok) {
-                    return response.json().then((data) => {
-                        setSuccessMessage(
-                            'Реєстрація пройшла успішно. Будь ласка, перевірте свою електронну пошту для підтвердження акаунту.'
-                        );
-                        setEmail('');
-                        setName('');
-                        setSurname('');
-                        setPassword('');
-                        setConfirmPwd('');
-                        setPhone('')
-                        setErrors({});
-                    });
-                } else if (response.status === 400) {
-                    return response.json().then((errorData) => {
-                        setErrors({general: errorData.message});
-                    });
-                } else {
-                    return response.json().then(() => {
-                        setErrors({general: 'Виникла помилка. Будь ласка, спробуйте пізніше.'});
-                    });
-                }
-            })
-            .catch((error) => {
-                setIsLoading(false);
-                console.error('There was a problem with the fetch operation:', error);
+        const params = new URLSearchParams();
+        params.append('email', email);
+        params.append('name', name);
+        params.append('surname', surname);
+        params.append('password', password);
+        params.append('phone', phone);
+
+        try {
+            setIsLoading(true);
+            const response = await fetch('http://localhost:8080/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString(),
             });
-    }
+
+            setIsLoading(false);
+            if (response.ok) {
+                const data = await response.json();
+                setSuccessMessage('Реєстрація пройшла успішно. Будь ласка, перевірте свою електронну пошту для підтвердження акаунту.');
+                setEmail('');
+                setName('');
+                setSurname('');
+                setPassword('');
+                setConfirmPwd('');
+                setPhone('');
+                setErrors({});
+            } else if (response.status === 400) {
+                const errorData = await response.json();
+                setErrors({ general: errorData.message });
+            } else {
+                setErrors({ general: 'Виникла помилка. Будь ласка, спробуйте пізніше.' });
+            }
+        } catch (error) {
+            setIsLoading(false);
+            console.error('There was a problem with the fetch operation:', error);
+            setErrors({ general: 'Виникла помилка під час реєстрації. Спробуйте пізніше.' });
+        }
+    };
 
     return (
         <section className="login-container">
-            <p  className={errors ? "errors" : "offscreen"} aria-live="assertive">
-                {errors}
+            <p className={errors.general || errors.passwordMatch ? "errors" : "offscreen"} aria-live="assertive">
+                {errors.general || errors.passwordMatch}
             </p>
             <h1 className="login-title">Sign Up</h1>
             <form onSubmit={handleSubmit} className="login-form">
@@ -149,8 +146,11 @@ const Register = () => {
                     className="login-input"
                 />
 
-                <button className="login-button">Sign Up</button>
+                <button className="login-button" disabled={isLoading}>
+                    {isLoading ? 'Loading...' : 'Sign Up'}
+                </button>
             </form>
+            {successMessage && <p className="success-message">{successMessage}</p>}
             <p className="login-footer">
                 Already have an account?<br/>
                 <span className="line">

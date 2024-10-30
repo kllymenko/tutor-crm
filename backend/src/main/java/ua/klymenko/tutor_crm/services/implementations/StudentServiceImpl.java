@@ -3,6 +3,7 @@ package ua.klymenko.tutor_crm.services.implementations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.klymenko.tutor_crm.entities.Student;
+import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.repositories.StudentRepository;
 import ua.klymenko.tutor_crm.services.interfaces.StudentService;
 
@@ -40,4 +41,8 @@ public class StudentServiceImpl implements StudentService {
         studentRepository.deleteById(id);
     }
 
+    @Override
+    public List<Student> getAllByUser(User user) {
+        return studentRepository.findByUserId(user.getId());
+    }
 }

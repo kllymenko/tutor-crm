@@ -1,26 +1,34 @@
 package ua.klymenko.tutor_crm.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Value;
+import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-/**
- * DTO for {@link ua.klymenko.tutor_crm.entities.Student}
- */
-@Value
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudentDto implements Serializable {
-    Integer id;
+    private Integer id;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("user_id")
+    private Long userId;
     @NotNull
     @Size(max = 64)
-    String name;
+    private String name;
     @Size(max = 64)
-    String surname;
+    private  String surname;
     @NotNull
     @Size(max = 20)
-    String phone;
+    private  String phone;
     @NotNull
-    BigDecimal pricePerLesson;
+    @JsonProperty("price_per_lesson")
+    private BigDecimal pricePerLesson;
 }

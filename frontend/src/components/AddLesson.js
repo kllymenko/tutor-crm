@@ -4,12 +4,10 @@ import Select from "react-select";
 import "react-datepicker/dist/react-datepicker.css";
 import Navbar from "./navbar/Navbar";
 
-export default function AddLesson({onSave}) {
+export default function AddLesson() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [tutors, setTutors] = useState([]);
     const [students, setStudents] = useState([]);
     const [formData, setFormData] = useState({
-        tutor_id: null,
         student_id: null,
         subject: "",
         timeStart: new Date(),
@@ -19,12 +17,6 @@ export default function AddLesson({onSave}) {
     });
 
     useEffect(() => {
-        // Завантаження списків викладачів та студентів з бекенду
-        fetch("http://localhost:8080/api/tutors")
-            .then((res) => res.json())
-            .then((data) => setTutors(data.map(tutor => ({value: tutor.id, label: tutor.name}))))
-            .catch((error) => console.error("Error fetching tutors:", error));
-
         fetch("http://localhost:8080/api/students")
             .then((res) => res.json())
             .then((data) => setStudents(data.map(student => ({value: student.id, label: student.name}))))
@@ -67,15 +59,6 @@ export default function AddLesson({onSave}) {
             <div className={`table-container ${isSidebarOpen ? "shrinked" : ""}`}>
                 <form onSubmit={handleSubmit}>
                     <h2>Додати заняття</h2>
-
-                    <div>
-                        <label>Викладач:</label>
-                        <Select
-                            options={tutors}
-                            onChange={handleTutorChange}
-                            placeholder="Виберіть викладача"
-                        />
-                    </div>
 
                     <div>
                         <label>Студент:</label>

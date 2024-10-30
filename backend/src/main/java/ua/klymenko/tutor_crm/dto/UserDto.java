@@ -1,18 +1,27 @@
 package ua.klymenko.tutor_crm.dto;
 
-import lombok.Value;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
+import ua.klymenko.tutor_crm.entities.Student;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-/**
- * DTO for {@link ua.klymenko.tutor_crm.entities.User}
- */
-@Value
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+
 public class UserDto implements Serializable {
-    Long id;
-    String name;
-    String surname;
-    String email;
-    String passwordHash;
-    String phone;
+    private Long id;
+    private String name;
+    private String surname;
+    private String email;
+    private String passwordHash;
+    private String phone;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Set<Student> students = new LinkedHashSet<>();
 }

@@ -19,19 +19,17 @@ import java.util.List;
 @RequestMapping("/api/students")
 public class StudentController {
     private final StudentService studentService;
-    private final UserService userService;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public StudentController(StudentService studentService, UserService userService, ModelMapper modelMapper) {
+    public StudentController(StudentService studentService, ModelMapper modelMapper) {
         this.studentService = studentService;
-        this.userService = userService;
         this.modelMapper = modelMapper;
     }
 
     @GetMapping
-    public List<Student> getAllStudents() {
-        return studentService.getAll();
+    public List<Student> getAllStudents(@AuthenticationPrincipal User user) {
+        return studentService.getAllByUser(user);
     }
 
     @GetMapping("/{id}")
@@ -44,7 +42,8 @@ public class StudentController {
     public Student createStudent(@AuthenticationPrincipal User user, @RequestBody StudentDto studentDto) {
         System.out.println(user.getEmail());
         System.out.println(studentDto);
-        Student student = convertToEntity(studentDto, user);
+        studentDto.setUserId(user.getId());
+        Student student = modelMapper.map(studentDto, Student.class);
 
         return studentService.save(student);
     }
@@ -62,9 +61,4 @@ public class StudentController {
         studentService.delete(studentId);
     }
 
-    private Student convertToEntity(StudentDto studentDto, User user) {
-        Student student = modelMapper.map(studentDto, Student.class);
-        student.setUser(user);
-        return student;
-    }
 }

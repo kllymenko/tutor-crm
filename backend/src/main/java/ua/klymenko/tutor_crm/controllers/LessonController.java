@@ -3,6 +3,7 @@ package ua.klymenko.tutor_crm.controllers;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ua.klymenko.tutor_crm.dto.LessonDto;
 import ua.klymenko.tutor_crm.entities.Lesson;
@@ -47,13 +48,11 @@ public class LessonController {
     }
 
     @PostMapping
-    public Lesson createLesson(@RequestBody LessonDto lessonDto) {
-        User existingTutor = userService.getById(lessonDto.getTutor_id()).orElseThrow(()
-                -> new EntityNotFoundException("Tutor not found with id: " + lessonDto.getTutor_id()));
+    public Lesson createLesson(@AuthenticationPrincipal User user, @RequestBody LessonDto lessonDto) {
         Student existingStudent = studentService.getById(lessonDto.getStudent_id()).orElseThrow(()
                 -> new EntityNotFoundException("Student not found with id: " + lessonDto.getStudent_id()));
         Subject subject = subjectService.save(new Subject(null, lessonDto.getSubject()));
-        Lesson lesson = convertToEntity(lessonDto, existingTutor, existingStudent, subject);
+        Lesson lesson = convertToEntity(lessonDto, user, existingStudent, subject);
         return lessonService.save(lesson);
     }
 
