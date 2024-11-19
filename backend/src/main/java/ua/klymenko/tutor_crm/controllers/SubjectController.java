@@ -11,6 +11,7 @@ import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.services.interfaces.SubjectService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
@@ -26,9 +27,13 @@ public class SubjectController {
     }
 
     @GetMapping
-    public List<Subject> getAllSubjects() {
-        return subjectService.getAll();
+    public ResponseEntity<List<SubjectDto>> getAllSubjects() {
+        List<SubjectDto> subjectDtos = subjectService.getAll().stream()
+                .map(subject -> new SubjectDto(subject.getId(), subject.getName()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(subjectDtos);
     }
+
 
     @PostMapping
     public ResponseEntity<SubjectDto> createSubject(@AuthenticationPrincipal User user, @RequestBody SubjectDto subjectDto) {
