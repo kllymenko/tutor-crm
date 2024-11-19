@@ -33,7 +33,7 @@ public class SubjectController {
     @PostMapping
     public ResponseEntity<SubjectDto> createSubject(@AuthenticationPrincipal User user, @RequestBody SubjectDto subjectDto) {
         Subject subject = modelMapper.map(subjectDto, Subject.class);
-        Subject savedSubject = subjectService.save(subject);
-        return ResponseEntity.ok(modelMapper.map(savedSubject, SubjectDto.class));
+        subject = subjectService.save(subject);
+        return ResponseEntity.ok(modelMapper.map(subject, SubjectDto.class));
     }
 }

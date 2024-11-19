@@ -12,7 +12,9 @@ import ua.klymenko.tutor_crm.entities.enums.UserRole;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -69,6 +71,9 @@ public class User implements UserDetails {
     @ColumnDefault("false")
     @Column(name = "is_approved", nullable = false)
     private Boolean isApproved = false;
+
+    @OneToMany(mappedBy = "user")
+    private Set<Student> students = new LinkedHashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

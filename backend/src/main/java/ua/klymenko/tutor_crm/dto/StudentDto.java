@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import ua.klymenko.tutor_crm.entities.Subject;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -41,19 +42,18 @@ public class StudentDto implements Serializable {
     @JsonProperty("price_per_lesson")
     private BigDecimal pricePerLesson;
 
-    @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("user_id")
     private Long userId;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("subject_ids")
-    private Set<Long> subjectIds;
+    @JsonProperty("subjects")
+    private Set<SubjectDto> subjects;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("lesson_ids")
-    private Set<Long> lessonIds;
+    @JsonProperty("lessons")
+    private Set<LessonDto> lessons;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("created_at")
