@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 import ua.klymenko.tutor_crm.dto.request.RegisterRequest;
 import ua.klymenko.tutor_crm.dto.response.LoginResponse;
 import ua.klymenko.tutor_crm.entities.User;
+import ua.klymenko.tutor_crm.entities.enums.UserRole;
 import ua.klymenko.tutor_crm.exception.JwtTokenException;
 import ua.klymenko.tutor_crm.security.JwtService;
 import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
@@ -45,7 +47,10 @@ public class AuthenticationService {
                 .surname(request.getSurname())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
-                .createdAt(LocalDateTime.now())
+                .isApproved(false)
+                .role(UserRole.PLAYER)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build());
     }
 

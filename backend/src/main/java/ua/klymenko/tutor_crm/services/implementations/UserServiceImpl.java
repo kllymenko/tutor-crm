@@ -9,6 +9,7 @@ import ua.klymenko.tutor_crm.exception.EmailAlreadyExistsException;
 import ua.klymenko.tutor_crm.repositories.UserRepository;
 import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User save(User user) {
+        user.setCreatedAt(Instant.now());
+        user.setUpdatedAt(Instant.now());
         return userRepository.save(user);
     }
 

@@ -3,6 +3,7 @@ package ua.klymenko.tutor_crm.controllers;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ua.klymenko.tutor_crm.dto.StudentDto;
@@ -13,6 +14,7 @@ import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
@@ -27,33 +29,36 @@ public class StudentController {
         this.modelMapper = modelMapper;
     }
 
-    @GetMapping
-    public List<Student> getAllStudents(@AuthenticationPrincipal User user) {
-        return studentService.getAllByUser(user);
+    @GetMapping("/my")
+    public ResponseEntity<List<StudentDto>> getAllMyStudents(@AuthenticationPrincipal User user) {
+        List<Student> students = studentService.getAllByUser(user);
+        List<StudentDto> studentDTOs = students.stream()
+                .map(student -> modelMapper.map(student, StudentDto.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(studentDTOs);
     }
 
     @GetMapping("/{id}")
-    public Student getStudentById(@PathVariable("id") Long studentId) {
-        return studentService.getById(studentId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable("id") Long studentId) {
+        Student student = studentService.getById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Student with id " + studentId + " not found"));
+        return ResponseEntity.ok(modelMapper.map(student, StudentDto.class));
     }
 
     @PostMapping
-    public Student createStudent(@AuthenticationPrincipal User user, @RequestBody StudentDto studentDto) {
-        System.out.println(user.getEmail());
-        System.out.println(studentDto);
+    public ResponseEntity<StudentDto> createStudent(@AuthenticationPrincipal User user, @RequestBody StudentDto studentDto) {
         studentDto.setUserId(user.getId());
-        Student student = modelMapper.map(studentDto, Student.class);
-
-        return studentService.save(student);
+        Student student = studentService.save(modelMapper.map(studentDto, Student.class));
+        return ResponseEntity.ok(modelMapper.map(student, StudentDto.class));
     }
 
     @PutMapping("/{id}")
-    public Student updateStudent(@PathVariable("id") Long studentId, @RequestBody StudentDto studentDto) {
+    public ResponseEntity<StudentDto> updateStudent(@AuthenticationPrincipal User user, @PathVariable("id") Long studentId, @RequestBody StudentDto studentDto) {
         if (!studentId.equals(studentDto.getId())) {
-            throw new IllegalArgumentException("User ID in path must match the ID in the request body");
+            throw new IllegalArgumentException("Student ID in path must match the ID in the request body");
         }
-        return studentService.save(modelMapper.map(studentDto, Student.class));
+        Student student = studentService.save(modelMapper.map(studentDto, Student.class));
+        return ResponseEntity.ok(modelMapper.map(student, StudentDto.class));
     }
 
     @DeleteMapping("/{id}")

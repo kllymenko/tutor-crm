@@ -1,15 +1,25 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import Select from "react-select";
 import "react-datepicker/dist/react-datepicker.css";
 import Navbar from "./navbar/Navbar";
+import api from "../hooks/api";
+
+const LESSONS_URL = '/api/lessons';
+const SUBJECTS_URL = '/api/subjects';
 
 export default function AddLesson() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [students, setStudents] = useState([]);
+    const [subjects, setSubjects] = useState([]); // Список предметів
+    const [newSubject, setNewSubject] = useState(""); // Новий предмет
+    const [isAddingSubject, setIsAddingSubject] = useState(false); // Стан додавання предмету
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
     const [formData, setFormData] = useState({
         student_id: null,
-        subject: "",
+        subject: null, // Зроблено вибором з існуючих
         timeStart: new Date(),
         timeEnd: new Date(),
         status: "",
@@ -17,40 +27,79 @@ export default function AddLesson() {
     });
 
     useEffect(() => {
-        fetch("http://localhost:8080/api/students")
-            .then((res) => res.json())
-            .then((data) => setStudents(data.map(student => ({value: student.id, label: student.name}))))
+        api.get(LESSONS_URL)
+            .then((res) => {
+                setStudents(res.data.map(student => ({ value: student.id, label: student.name })));
+            })
             .catch((error) => console.error("Error fetching students:", error));
+
+        // Завантаження предметів
+        api.get(SUBJECTS_URL)
+            .then((res) => {
+                setSubjects(res.data.map(subject => ({ value: subject.id, label: subject.name })));
+            })
+            .catch((error) => console.error("Error fetching subjects:", error));
     }, []);
 
-    const handleChange = (e) => {
-        const {name, value} = e.target;
-        setFormData({...formData, [name]: value});
-    };
 
-    const handleTutorChange = (selectedOption) => {
-        setFormData({...formData, tutor_id: selectedOption.value});
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleStudentChange = (selectedOption) => {
-        setFormData({...formData, student_id: selectedOption.value});
+        setFormData({ ...formData, student_id: selectedOption.value });
+    };
+
+    const handleSubjectChange = (selectedOption) => {
+        setFormData({ ...formData, subject: selectedOption.value });
     };
 
     const handleStartDateChange = (date) => {
-        setFormData({...formData, timeStart: date});
+        setFormData({ ...formData, timeStart: date });
     };
 
     const handleEndDateChange = (date) => {
-        setFormData({...formData, timeEnd: date});
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSave(formData); // Виклик функції для збереження
+        setFormData({ ...formData, timeEnd: date });
     };
 
     const toggleSidebar = (isOpen) => {
         setIsSidebarOpen(isOpen);
+    };
+
+    const handleAddNewSubject = () => {
+        if (newSubject.trim()) {
+            const newSubjectOption = { value: newSubject, label: newSubject };
+            setSubjects((prevSubjects) => [...prevSubjects, newSubjectOption]);
+            setFormData({ ...formData, subject: newSubject });
+            setNewSubject("");
+            setIsAddingSubject(false);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+        setSuccessMessage(null);
+
+        try {
+            const response = await api.post(LESSONS_URL, JSON.stringify(formData), {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            setIsLoading(false);
+            if (response.status !== 200) {
+                throw new Error("Не вдалося зберегти заняття");
+            }
+
+            const data = await response.data; // Use response.data for axios
+            setSuccessMessage("Заняття успішно додано!");
+        } catch (error) {
+            setIsLoading(false);
+            setError("Помилка при збереженні заняття: " + error.message);
+        }
     };
 
     return (
@@ -71,13 +120,25 @@ export default function AddLesson() {
 
                     <div>
                         <label>Предмет:</label>
-                        <input
-                            type="text"
-                            name="subject"
-                            value={formData.subject}
-                            onChange={handleChange}
-                            placeholder="Введіть предмет"
+                        <Select
+                            options={subjects}
+                            onChange={handleSubjectChange}
+                            value={subjects.find(subject => subject.value === formData.subject)}
+                            placeholder="Виберіть предмет"
                         />
+                        {isAddingSubject ? (
+                            <>
+                                <input
+                                    type="text"
+                                    value={newSubject}
+                                    onChange={(e) => setNewSubject(e.target.value)}
+                                    placeholder="Назва нового предмету"
+                                />
+                                <button type="button" onClick={handleAddNewSubject}>Додати</button>
+                            </>
+                        ) : (
+                            <button type="button" onClick={() => setIsAddingSubject(true)}>Додати новий предмет</button>
+                        )}
                     </div>
 
                     <div>
@@ -88,7 +149,8 @@ export default function AddLesson() {
                             showTimeSelect
                             dateFormat="Pp"
                             placeholderText="Виберіть дату і час"
-                            showMonthYearDropdown/>
+                            showMonthYearDropdown
+                        />
                     </div>
 
                     <div>
@@ -99,7 +161,8 @@ export default function AddLesson() {
                             showTimeSelect
                             dateFormat="Pp"
                             placeholderText="Виберіть дату і час"
-                            showMonthYearDropdown/>
+                            showMonthYearDropdown
+                        />
                     </div>
 
                     <div>

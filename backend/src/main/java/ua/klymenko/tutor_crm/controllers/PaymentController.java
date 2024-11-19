@@ -3,6 +3,7 @@ package ua.klymenko.tutor_crm.controllers;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ua.klymenko.tutor_crm.dto.PaymentDto;
 import ua.klymenko.tutor_crm.entities.Payment;
@@ -43,14 +44,10 @@ public class PaymentController {
     }
 
     @PostMapping
-    public Payment createPayment(@RequestBody PaymentDto paymentDto) {
-        User existingTutor = userService.getById(paymentDto.getTutor_id()).orElseThrow(()
-                -> new EntityNotFoundException("Tutor not found with id: " + paymentDto.getTutor_id()));
-        Student existingStudent = studentService.getById(paymentDto.getStudent_id()).orElseThrow(()
-                -> new EntityNotFoundException("Student not found with id: " + paymentDto.getStudent_id()));
-
-        Payment payment = convertToEntity(paymentDto, existingTutor, existingStudent);
-
+    public Payment createPayment(@AuthenticationPrincipal User user, @RequestBody PaymentDto paymentDto) {
+        Payment payment = modelMapper.map(paymentDto, Payment.class);
+//        Student existingStudent = studentService.getById(paymentDto.getStudentId()).orElseThrow(()
+//                -> new EntityNotFoundException("Student not found with id: " + paymentDto.getStudentId()));
         return paymentService.save(payment);
     }
 
@@ -65,12 +62,5 @@ public class PaymentController {
     @DeleteMapping("/{id}")
     public void deletePayment(@PathVariable("id") Long paymentId) {
         paymentService.delete(paymentId);
-    }
-
-    private Payment convertToEntity(PaymentDto paymentDto, User user, Student student) {
-        Payment payment = modelMapper.map(paymentDto, Payment.class);
-        payment.setUser(user);
-        payment.setStudent(student);
-        return payment;
     }
 }

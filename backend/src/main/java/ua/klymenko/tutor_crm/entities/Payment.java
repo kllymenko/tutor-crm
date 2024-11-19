@@ -1,6 +1,7 @@
 package ua.klymenko.tutor_crm.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import ua.klymenko.tutor_crm.entities.enums.PaymentMethod;
@@ -15,29 +16,32 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicUpdate
-@Table(name = "payment")
+@Table(name = "payment", schema = "tutor_crm")
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @NotNull
+    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
+    private BigDecimal amount;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
-
-    @Column(name = "time", nullable = false)
-    private Instant time;
-
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "method", nullable = false)
     private PaymentMethod method;
+
+    @NotNull
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 
 }

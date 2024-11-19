@@ -8,27 +8,58 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Set;
 
+/**
+ * DTO for {@link ua.klymenko.tutor_crm.entities.Student}
+ */
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentDto implements Serializable {
-    private Integer id;
+    private Long id;
 
+    @NotNull
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String name;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String surname;
+
+    @NotNull
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String phone;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private BigDecimal balance;
+
+    @NotNull
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("price_per_lesson")
+    private BigDecimal pricePerLesson;
+
+    @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("user_id")
     private Long userId;
+
     @NotNull
-    @Size(max = 64)
-    private String name;
-    @Size(max = 64)
-    private  String surname;
-    @NotNull
-    @Size(max = 20)
-    private  String phone;
-    @NotNull
-    @JsonProperty("price_per_lesson")
-    private BigDecimal pricePerLesson;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("subject_ids")
+    private Set<Long> subjectIds;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("lesson_ids")
+    private Set<Long> lessonIds;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("created_at")
+    private Instant createdAt;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("updated_at")
+    private Instant updatedAt;
 }

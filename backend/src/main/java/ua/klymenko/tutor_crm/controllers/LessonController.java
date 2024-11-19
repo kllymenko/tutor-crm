@@ -16,21 +16,21 @@ import ua.klymenko.tutor_crm.services.interfaces.SubjectService;
 import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
 @RequestMapping("/api/lessons")
 public class LessonController {
     private final LessonService lessonService;
-    private final UserService userService;
     private final StudentService studentService;
     private final SubjectService subjectService;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public LessonController(LessonService lessonService, UserService userService, StudentService studentService, SubjectService subjectService, ModelMapper modelMapper) {
+    public LessonController(LessonService lessonService, StudentService studentService, SubjectService subjectService, ModelMapper modelMapper) {
         this.lessonService = lessonService;
-        this.userService = userService;
         this.studentService = studentService;
         this.subjectService = subjectService;
         this.modelMapper = modelMapper;
@@ -44,15 +44,16 @@ public class LessonController {
     @GetMapping("/{id}")
     public Lesson getLessonById(@PathVariable("id") Long lessonId) {
         return lessonService.getById(lessonId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Lesson not found"));
     }
 
     @PostMapping
     public Lesson createLesson(@AuthenticationPrincipal User user, @RequestBody LessonDto lessonDto) {
-        Student existingStudent = studentService.getById(lessonDto.getStudent_id()).orElseThrow(()
-                -> new EntityNotFoundException("Student not found with id: " + lessonDto.getStudent_id()));
-        Subject subject = subjectService.save(new Subject(null, lessonDto.getSubject()));
-        Lesson lesson = convertToEntity(lessonDto, user, existingStudent, subject);
+        Lesson lesson = modelMapper.map(lessonDto, Lesson.class);
+//        Set<Student> students = lessonDto.getStudentIds().stream()
+//                .map(studentId -> studentService.getById(studentId)
+//                        .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId)))
+//                .collect(Collectors.toSet());
         return lessonService.save(lesson);
     }
 
@@ -69,11 +70,4 @@ public class LessonController {
         lessonService.delete(lessonId);
     }
 
-    private Lesson convertToEntity(LessonDto lessonDto, User user, Student student, Subject subject) {
-        Lesson lesson = modelMapper.map(lessonDto, Lesson.class);
-        lesson.setUser(user);
-        lesson.setStudent(student);
-        lesson.setSubject(subject);
-        return lesson;
-    }
 }

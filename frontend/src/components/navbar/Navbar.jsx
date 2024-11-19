@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { SidebarData } from "./SidebarData";
 
 export default function Navbar({ toggleSidebar }) {
-    const [sidebar, setSidebar] = useState(false);
+    const [sidebar, setSidebar] = useState(true);
 
     const showSidebar = () => {
         setSidebar(!sidebar);
