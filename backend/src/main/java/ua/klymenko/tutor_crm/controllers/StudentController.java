@@ -15,9 +15,7 @@ import ua.klymenko.tutor_crm.entities.Subject;
 import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.services.interfaces.StudentService;
 import ua.klymenko.tutor_crm.services.interfaces.SubjectService;
-import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,7 +40,7 @@ public class StudentController {
         List<Student> students = studentService.getAllByUser(user);
         List<StudentDto> studentDTOs = students.stream()
                 .map(student -> modelMapper.map(student, StudentDto.class))
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(studentDTOs);
     }
 

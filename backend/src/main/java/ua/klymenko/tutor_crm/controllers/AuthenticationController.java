@@ -1,5 +1,6 @@
 package ua.klymenko.tutor_crm.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,7 +26,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity<LoginResponse> loginUser(@ModelAttribute LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> loginUser(@Valid @ModelAttribute LoginRequest loginRequest) {
         LoginResponse response = authenticationService.login(loginRequest.getEmail(), loginRequest.getPassword());
         return ResponseEntity.ok(response);
     }

@@ -1,5 +1,6 @@
 package ua.klymenko.tutor_crm.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +19,6 @@ import ua.klymenko.tutor_crm.filter.JwtAuthenticationFilter;
 import ua.klymenko.tutor_crm.security.AuthProvider;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -35,16 +35,21 @@ public class SecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/example/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/example/player/**").hasAuthority("PLAYER")
-                        .requestMatchers("/example/**").authenticated()
-                        .requestMatchers("/swagger-ui/**", "/swagger-resources/*").permitAll()
-                        .anyRequest().permitAll()) // Поки доступно всім
+                        // Дозволяємо доступ до ендпоінтів для логіну та реєстрації без токенів
+                        .requestMatchers("/auth/login", "/auth/register", "/swagger-ui/**", "/swagger-resources/*").permitAll()
+                        // Інші ендпоінти вимагають автентифікації
+//                        .requestMatchers("/example/admin/**").hasAuthority("ADMIN")
+//                        .requestMatchers("/example/player/**").hasAuthority("PLAYER")
+//                        .requestMatchers("/example/**").authenticated()
+                        .anyRequest().authenticated()) // Всі інші запити потребують автентифікації
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

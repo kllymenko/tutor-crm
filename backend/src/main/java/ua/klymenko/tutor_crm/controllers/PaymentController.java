@@ -3,6 +3,7 @@ package ua.klymenko.tutor_crm.controllers;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ua.klymenko.tutor_crm.dto.PaymentDto;
@@ -20,14 +21,12 @@ import java.util.List;
 @RequestMapping("/api/payments")
 public class PaymentController {
     private final PaymentService paymentService;
-    private final UserService userService;
     private final StudentService studentService;
     private final ModelMapper modelMapper;
 
     @Autowired
     public PaymentController(PaymentService paymentService, UserService userService, StudentService studentService, ModelMapper modelMapper) {
         this.paymentService = paymentService;
-        this.userService = userService;
         this.studentService = studentService;
         this.modelMapper = modelMapper;
     }
@@ -37,18 +36,15 @@ public class PaymentController {
         return paymentService.getAll();
     }
 
-    @GetMapping("/{id}")
-    public Payment getPaymentById(@PathVariable("id") Long paymentId) {
-        return paymentService.getById(paymentId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
 
     @PostMapping
-    public Payment createPayment(@AuthenticationPrincipal User user, @RequestBody PaymentDto paymentDto) {
+    public ResponseEntity<PaymentDto> createPayment(@AuthenticationPrincipal User user, @RequestBody PaymentDto paymentDto) {
+        Student existingStudent = studentService.getById(paymentDto.getStudentId()).orElseThrow(()
+                -> new EntityNotFoundException("Student not found with id: " + paymentDto.getStudentId()));
         Payment payment = modelMapper.map(paymentDto, Payment.class);
-//        Student existingStudent = studentService.getById(paymentDto.getStudentId()).orElseThrow(()
-//                -> new EntityNotFoundException("Student not found with id: " + paymentDto.getStudentId()));
-        return paymentService.save(payment);
+        payment.setStudent(existingStudent);
+        payment = paymentService.save(payment);
+        return ResponseEntity.ok(modelMapper.map(payment, PaymentDto.class));
     }
 
     @PutMapping("/{id}")

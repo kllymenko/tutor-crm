@@ -1,26 +1,72 @@
-import React, {useState, useEffect} from "react";
-import Navbar from "./navbar/Navbar";
-import api from "../hooks/api";
+import React, { useState, useEffect } from 'react';
+import {
+    Container,
+    Box,
+    Typography,
+    TextField,
+    Button,
+    Alert,
+    Snackbar,
+    MenuItem,
+    Select,
+    InputLabel,
+    FormControl,
+    CircularProgress,
+    OutlinedInput,
+} from '@mui/material';
+import Navbar from './navbar/Navbar';
+import api from '../hooks/api';
 
 const STUDENTS_URL = '/api/students';
+const SUBJECTS_URL = '/api/subjects';
 
 export default function AddStudent() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState(null);
-    const [StudentDto, setStudentDto] = useState({
-        name: "",
-        surname: "",
-        phone: "",
-        price_per_lesson: ""
+    const [errorMsg, setErrorMsg] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [subjects, setSubjects] = useState([]);
+    const [formData, setFormData] = useState({
+        name: '',
+        surname: '',
+        phone: '',
+        price_per_lesson: '',
+        subject_ids: [],
     });
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+
+    useEffect(() => {
+        // Fetch subjects from the API
+        const fetchSubjects = async () => {
+            try {
+                const response = await api.get(SUBJECTS_URL);
+                setSubjects(response.data);
+            } catch (error) {
+                console.error('Error fetching subjects:', error);
+                setErrorMsg('Failed to load subjects. Please try again later.');
+                setOpenSnackbar(true);
+            }
+        };
+
+        fetchSubjects();
+    }, []);
 
     const handleChange = (e) => {
-        const {name, value} = e.target;
-        setStudentDto({...StudentDto, [name]: value});
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        setErrorMsg('');
     };
 
+    const handleSubjectChange = (event) => {
+        const {
+            target: { value },
+        } = event;
+        setFormData({
+            ...formData,
+            subject_ids: typeof value === 'string' ? value.split(',') : value,
+        });
+        setErrorMsg('');
+    };
 
     const toggleSidebar = (isOpen) => {
         setIsSidebarOpen(isOpen);
@@ -29,102 +75,152 @@ export default function AddStudent() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        setError(null);
-        setSuccessMessage(null);
+        setErrorMsg('');
+        setSuccessMessage('');
+
+        // Client-side validation
+        if (
+            !formData.name ||
+            !formData.phone ||
+            !formData.price_per_lesson ||
+            formData.subject_ids.length === 0
+        ) {
+            setErrorMsg('Please fill in all required fields and select at least one subject.');
+            setOpenSnackbar(true);
+            setIsLoading(false);
+            return;
+        }
 
         try {
-            const response = await api.post(STUDENTS_URL, JSON.stringify(StudentDto), {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            console.log(response)
-            setIsLoading(false);
-            if (!response.status === 200) {
-                throw new Error("Не вдалося зберегти студента");
-            }
+            const response = await api.post(STUDENTS_URL, formData);
 
-            const data = await response.data; // Use response.data for axios
-            setSuccessMessage("Студента успішно додано!");
-            setStudentDto({
-                name: "",
-                surname: "",
-                phone: "",
-                price_per_lesson: ""
-            });
+            if (response.status === 201 || response.status === 200) {
+                setSuccessMessage('Student added successfully!');
+                setFormData({
+                    name: '',
+                    surname: '',
+                    phone: '',
+                    price_per_lesson: '',
+                    subject_ids: [],
+                });
+            } else {
+                throw new Error('Failed to save student.');
+            }
         } catch (error) {
+            console.error('Error saving student:', error);
+            setErrorMsg(error.response?.data?.message || 'Failed to save student. Please try again.');
+            setOpenSnackbar(true);
+        } finally {
             setIsLoading(false);
-            setError("Помилка при збереженні студента: " + error.message);
         }
+    };
+
+    const handleSnackbarClose = () => {
+        setOpenSnackbar(false);
     };
 
     return (
         <div>
-            <Navbar toggleSidebar={toggleSidebar}/>
-            <div className={`table-container ${isSidebarOpen ? "shrinked" : ""}`}>
-                <form onSubmit={handleSubmit}>
-                    <h2>Додати учня</h2>
-
-                    {error && <p style={{color: "red"}}>{error}</p>}
-                    {successMessage && <p style={{color: "green"}}>{successMessage}</p>}
-
-                    <div>
-                        <label>Ім'я:</label>
-                        <input
-                            type="text"
+            <Navbar toggleSidebar={toggleSidebar} />
+            <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant="h4" component="h1" gutterBottom>
+                        Add Student
+                    </Typography>
+                    {successMessage && (
+                        <Alert severity="success" sx={{ mb: 2 }}>
+                            {successMessage}
+                        </Alert>
+                    )}
+                    <form onSubmit={handleSubmit}>
+                        <TextField
+                            label="Name"
                             name="name"
-                            value={StudentDto.name}
+                            variant="outlined"
+                            fullWidth
+                            margin="normal"
+                            value={formData.name}
                             onChange={handleChange}
-                            placeholder="Введіть ім'я"
                             required
-                            maxLength={64}
                         />
-                    </div>
-
-                    <div>
-                        <label>Прізвище:</label>
-                        <input
-                            type="text"
+                        <TextField
+                            label="Surname"
                             name="surname"
-                            value={StudentDto.surname}
+                            variant="outlined"
+                            fullWidth
+                            margin="normal"
+                            value={formData.surname}
                             onChange={handleChange}
-                            placeholder="Введіть прізвище"
-                            maxLength={64}
                         />
-                    </div>
-
-                    <div>
-                        <label>Телефон:</label>
-                        <input
-                            type="tel"
+                        <TextField
+                            label="Phone"
                             name="phone"
-                            value={StudentDto.phone}
+                            variant="outlined"
+                            fullWidth
+                            margin="normal"
+                            value={formData.phone}
                             onChange={handleChange}
-                            placeholder="Введіть телефон"
                             required
-                            maxLength={20}
                         />
-                    </div>
-
-                    <div>
-                        <label>Ціна за урок:</label>
-                        <input
-                            type="number"
+                        <TextField
+                            label="Price per Lesson"
                             name="price_per_lesson"
-                            value={StudentDto.price_per_lesson}
+                            variant="outlined"
+                            fullWidth
+                            margin="normal"
+                            type="number"
+                            inputProps={{ min: 0, step: 0.01 }}
+                            value={formData.price_per_lesson}
                             onChange={handleChange}
-                            placeholder="Введіть ціну за урок"
                             required
-                            min="0"
-                            step="0.01"
                         />
-                    </div>
-
-                    <button type="submit" disabled={isLoading}>
-                        {isLoading ? "Збереження..." : "Зберегти"}
-                    </button>
-                </form>
-            </div>
+                        <FormControl variant="outlined" fullWidth margin="normal" required>
+                            <InputLabel id="subject-label">Subjects</InputLabel>
+                            <Select
+                                labelId="subject-label"
+                                id="subject_ids"
+                                multiple
+                                value={formData.subject_ids}
+                                onChange={handleSubjectChange}
+                                input={<OutlinedInput label="Subjects" />}
+                                renderValue={(selected) => {
+                                    const selectedSubjects = subjects.filter((subject) =>
+                                        selected.includes(subject.id)
+                                    );
+                                    return selectedSubjects.map((subject) => subject.name).join(', ');
+                                }}
+                            >
+                                {subjects.map((subject) => (
+                                    <MenuItem key={subject.id} value={subject.id}>
+                                        {subject.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            sx={{ mt: 2 }}
+                            disabled={isLoading}
+                            startIcon={isLoading && <CircularProgress size={20} />}
+                        >
+                            {isLoading ? 'Saving...' : 'Save'}
+                        </Button>
+                    </form>
+                </Box>
+            </Container>
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+                    {errorMsg}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

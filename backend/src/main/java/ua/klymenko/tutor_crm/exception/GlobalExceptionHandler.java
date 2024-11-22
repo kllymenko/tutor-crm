@@ -4,10 +4,14 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ua.klymenko.tutor_crm.dto.response.MessageResponse;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -35,4 +39,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<MessageResponse> handleConflictException(ConflictException ex) {
         return new ResponseEntity<>(new MessageResponse(ex.getMessage()), HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<MessageResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(fieldError -> String.format("Field '%s': %s", fieldError.getField(), fieldError.getDefaultMessage()))
+                .toList();
+        return new ResponseEntity<>(new MessageResponse(String.join(", ", errors)), HttpStatus.BAD_REQUEST);
+    }
+
 }

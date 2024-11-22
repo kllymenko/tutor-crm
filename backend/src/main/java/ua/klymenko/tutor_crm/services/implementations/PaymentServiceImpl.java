@@ -1,5 +1,6 @@
 package ua.klymenko.tutor_crm.services.implementations;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     @Override
+    @Transactional
     public Payment save(Payment payment) {
         Student student = payment.getStudent();
         student.setBalance(student.getBalance().add(payment.getAmount()));
