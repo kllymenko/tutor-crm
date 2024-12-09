@@ -75,6 +75,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private Set<Student> students = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "user")
+    private Set<Lesson> lessons = new LinkedHashSet<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

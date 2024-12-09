@@ -64,12 +64,8 @@ public class Student {
     )
     private Set<Subject> subjects;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "student_lesson",
-            joinColumns = @JoinColumn(name = "student_id"),
-            inverseJoinColumns = @JoinColumn(name = "lesson_id")
-    )
+    @NotNull
+    @ManyToMany(mappedBy = "students")
     private Set<Lesson> lessons;
 
 

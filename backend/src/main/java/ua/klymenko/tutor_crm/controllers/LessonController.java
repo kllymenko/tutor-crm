@@ -3,9 +3,14 @@ package ua.klymenko.tutor_crm.controllers;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ua.klymenko.tutor_crm.dto.LessonDto;
+import org.springframework.web.server.ResponseStatusException;
+import ua.klymenko.tutor_crm.dto.LessonDTO;
+import ua.klymenko.tutor_crm.dto.StudentDTO;
+import ua.klymenko.tutor_crm.dto.request.AddLessonRequest;
 import ua.klymenko.tutor_crm.entities.Lesson;
 import ua.klymenko.tutor_crm.entities.Student;
 import ua.klymenko.tutor_crm.entities.Subject;
@@ -13,7 +18,6 @@ import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.services.interfaces.LessonService;
 import ua.klymenko.tutor_crm.services.interfaces.StudentService;
 import ua.klymenko.tutor_crm.services.interfaces.SubjectService;
-import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
 import java.util.List;
 import java.util.Set;
@@ -36,9 +40,13 @@ public class LessonController {
         this.modelMapper = modelMapper;
     }
 
-    @GetMapping
-    public List<Lesson> getAllLessons() {
-        return lessonService.getAll();
+    @GetMapping("/my")
+    public ResponseEntity<List<LessonDTO>> getAllMyLessons(@AuthenticationPrincipal User user) {
+        List<Lesson> lessons = lessonService.getAllByUser(user);
+        List<LessonDTO> lessonDTOs = lessons.stream()
+                .map(lesson -> modelMapper.map(lesson, LessonDTO.class))
+                .toList();
+        return ResponseEntity.ok(lessonDTOs);
     }
 
     @GetMapping("/{id}")
@@ -48,13 +56,26 @@ public class LessonController {
     }
 
     @PostMapping
-    public Lesson createLesson(@AuthenticationPrincipal User user, @RequestBody LessonDto lessonDto) {
-        Lesson lesson = modelMapper.map(lessonDto, Lesson.class);
-//        Set<Student> students = lessonDto.getStudentIds().stream()
-//                .map(studentId -> studentService.getById(studentId)
-//                        .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId)))
-//                .collect(Collectors.toSet());
-        return lessonService.save(lesson);
+    public ResponseEntity<LessonDTO> createLesson(@AuthenticationPrincipal User user, @RequestBody AddLessonRequest addLessonRequest) {
+        if (addLessonRequest.getStudentIds() == null || addLessonRequest.getStudentIds().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Students IDs must be provided");
+        }
+
+        Set<Student> students = addLessonRequest.getStudentIds().stream()
+                .map(id -> studentService.getById(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Students not found with ID: " + id)))
+                .collect(Collectors.toSet());
+
+        Subject subject = subjectService.getById(addLessonRequest.getSubjectId())
+                .orElseThrow(() -> new EntityNotFoundException("Subject not found with ID: " + addLessonRequest.getSubjectId()));
+
+        Lesson lesson = modelMapper.map(addLessonRequest, Lesson.class);
+        lesson.setUser(user);
+        lesson.setStudents(students);
+        lesson.setSubject(subject);
+
+        lesson = lessonService.save(lesson);
+        return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(lesson, LessonDTO.class));
     }
 
     @PutMapping("/{id}")

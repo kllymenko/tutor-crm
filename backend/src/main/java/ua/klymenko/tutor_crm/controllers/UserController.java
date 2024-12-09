@@ -3,7 +3,7 @@ package ua.klymenko.tutor_crm.controllers;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ua.klymenko.tutor_crm.dto.UserDto;
+import ua.klymenko.tutor_crm.dto.UserDTO;
 import ua.klymenko.tutor_crm.entities.User;
 import ua.klymenko.tutor_crm.services.interfaces.UserService;
 
@@ -34,12 +34,12 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody UserDto userDto) {
+    public User createUser(@RequestBody UserDTO userDto) {
         return userService.save(modelMapper.map(userDto, User.class));
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable("id") Long userId, @RequestBody UserDto userDto) {
+    public User updateUser(@PathVariable("id") Long userId, @RequestBody UserDTO userDto) {
         if (!userId.equals(userDto.getId())) {
             throw new IllegalArgumentException("User ID in path must match the ID in the request body");
         }

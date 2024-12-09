@@ -40,6 +40,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User update(User user) {
+        user.setUpdatedAt(Instant.now());
+        return userRepository.save(user);
+    }
+
+    @Override
     public void delete(long id) {
         userRepository.deleteById(id);
     }

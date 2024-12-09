@@ -51,6 +51,12 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findAll();
     }
 
+    @Override
+    public Payment update(Payment payment) {
+        payment.setUpdatedAt(Instant.now());
+        return paymentRepository.save(payment);
+    }
+
 
     @Override
     public void delete(long id) {

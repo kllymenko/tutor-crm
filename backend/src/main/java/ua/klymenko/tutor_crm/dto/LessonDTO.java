@@ -3,47 +3,55 @@ package ua.klymenko.tutor_crm.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
-import ua.klymenko.tutor_crm.entities.enums.UserRole;
+import ua.klymenko.tutor_crm.entities.enums.LessonStatus;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Set;
 
 /**
- * DTO for {@link ua.klymenko.tutor_crm.entities.User}
+ * DTO for {@link ua.klymenko.tutor_crm.entities.Lesson}
  */
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto implements Serializable {
+public class LessonDTO implements Serializable {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long id;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String name;
+    @JsonProperty("subject_id")
+    private Long subjectId;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String surname;
+    @JsonProperty("student_ids")
+    private Set<Long> studentIds;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String email;
+    @JsonProperty("time_end")
+    private Instant timeEnd;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String phone;
+    @JsonProperty("time_start")
+    private Instant timeStart;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Size(max = 45, message = "Password have to contain up to 45 symbols!")
-    @JsonProperty("password_hash")
-    private String passwordHash;
+    private LessonStatus status;
 
-    private UserRole role;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String summary;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("user_id")
+    private Long userId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("created_at")
@@ -52,8 +60,4 @@ public class UserDto implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("updated_at")
     private Instant updatedAt;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("is_approved")
-    private Boolean isApproved;
 }

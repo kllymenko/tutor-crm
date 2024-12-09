@@ -24,6 +24,7 @@ import {
     Select,
     InputLabel,
     FormControl,
+    FormHelperText,
 } from '@mui/material';
 import {
     MoreVert as MoreVertIcon,
@@ -40,14 +41,14 @@ export default function Students() {
     const [errorMsg, setErrorMsg] = useState('');
     const [openSnackbar, setOpenSnackbar] = useState(false);
 
-    // Table state
+    // Стан таблиці
     const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = useState('name');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchText, setSearchText] = useState('');
 
-    // Edit Student Modal State
+    // Стан модального вікна редагування студента
     const [openEditModal, setOpenEditModal] = useState(false);
     const [currentStudent, setCurrentStudent] = useState({
         name: '',
@@ -57,14 +58,16 @@ export default function Students() {
         subjects: [],
     });
     const [originalStudent, setOriginalStudent] = useState(null);
+    const [editLoading, setEditLoading] = useState(false); // Стан завантаження редагування
 
-    // Add Payment Modal State
+    // Стан модального вікна додавання платежу
     const [openPaymentModal, setOpenPaymentModal] = useState(false);
     const [paymentData, setPaymentData] = useState({
         amount: '',
         method: '',
         student_id: null,
     });
+    const [paymentLoading, setPaymentLoading] = useState(false); // Стан завантаження платежу
 
     const toggleSidebar = (isOpen) => {
         setIsSidebarOpen(isOpen);
@@ -95,7 +98,7 @@ export default function Students() {
         setOpenSnackbar(false);
     };
 
-    // Sorting functions
+    // Функції сортування
     const handleRequestSort = (property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
@@ -124,7 +127,7 @@ export default function Students() {
         return 0;
     };
 
-    // Pagination functions
+    // Функції пагінації
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -134,7 +137,7 @@ export default function Students() {
         setPage(0);
     };
 
-    // Search filtering
+    // Пошук
     const handleSearchChange = (event) => {
         setSearchText(event.target.value);
     };
@@ -145,27 +148,18 @@ export default function Students() {
         )
     );
 
-    // Avoid a layout jump when reaching the last page with empty rows.
     const emptyRows =
         rowsPerPage - Math.min(rowsPerPage, filteredStudents.length - page * rowsPerPage);
 
-    // Edit Student Handlers
+    // Обробники редагування студента
     const handleEditClick = (student) => {
-        setCurrentStudent({ ...student }); // Clone the student object
-        setOriginalStudent({ ...student }); // Store original data
+        setCurrentStudent({ ...student }); // Клонування об'єкта студента
+        setOriginalStudent({ ...student }); // Збереження оригінальних даних
         setOpenEditModal(true);
     };
 
     const handleEditModalClose = () => {
         setOpenEditModal(false);
-        setCurrentStudent({
-            name: '',
-            surname: '',
-            phone: '',
-            price_per_lesson: '',
-            subjects: [],
-        });
-        setOriginalStudent(null);
     };
 
     const handleEditChange = (e) => {
@@ -198,7 +192,12 @@ export default function Students() {
         return sortedA.every((element, index) => element === sortedB[index]);
     };
 
+    const isEditFormValid = () => {
+        return currentStudent.subjects && currentStudent.subjects.length > 0;
+    };
+
     const handleEditSubmit = async () => {
+        setEditLoading(true); // Починаємо завантаження
         try {
             await api.put(`/api/students/${currentStudent.id}`, currentStudent);
             setStudents((prevStudents) =>
@@ -206,23 +205,17 @@ export default function Students() {
                     student.id === currentStudent.id ? currentStudent : student
                 )
             );
-            setOpenEditModal(false);
-            setCurrentStudent({
-                name: '',
-                surname: '',
-                phone: '',
-                price_per_lesson: '',
-                subjects: [],
-            });
-            setOriginalStudent(null);
+            setOpenEditModal(false); // Закриваємо модальне вікно
         } catch (error) {
             console.error('Error updating student:', error);
             setErrorMsg('Failed to update student. Please try again.');
             setOpenSnackbar(true);
+        } finally {
+            setEditLoading(false); // Завершуємо завантаження
         }
     };
 
-    // Payment Handlers
+    // Обробники платежів
     const handlePaymentClick = (student) => {
         setPaymentData({
             amount: '',
@@ -258,9 +251,10 @@ export default function Students() {
     };
 
     const handlePaymentSubmit = async () => {
+        setPaymentLoading(true); // Починаємо завантаження
         try {
             await api.post('/api/payments', paymentData);
-            // Refresh student data to update balance
+            // Оновлення даних студентів для оновлення балансу
             const studentsResponse = await api.get('/api/students/my');
             setStudents(studentsResponse.data);
             setOpenPaymentModal(false);
@@ -273,8 +267,29 @@ export default function Students() {
             console.error('Error adding payment:', error);
             setErrorMsg('Failed to add payment. Please try again.');
             setOpenSnackbar(true);
+        } finally {
+            setPaymentLoading(false); // Завершуємо завантаження
         }
     };
+
+    // Компонент накладання завантаження
+    const LoadingOverlay = () => (
+        <Box
+            sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+        >
+            <CircularProgress />
+        </Box>
+    );
 
     return (
         <div>
@@ -395,7 +410,7 @@ export default function Students() {
                                                         </IconButton>
                                                     </TableCell>
                                                     <TableCell>
-                                                        {/* Additional actions can be added here */}
+                                                        {/* Додаткові дії можна додати тут */}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -431,19 +446,31 @@ export default function Students() {
                 </Alert>
             </Snackbar>
 
-            {/* Edit Student Modal */}
+            {/* Модальне вікно редагування студента */}
             <Modal
                 open={openEditModal}
                 onClose={handleEditModalClose}
                 closeAfterTransition
             >
-                <Fade in={openEditModal}>
+                <Fade
+                    in={openEditModal}
+                    onExited={() => {
+                        setCurrentStudent({
+                            name: '',
+                            surname: '',
+                            phone: '',
+                            price_per_lesson: '',
+                            subjects: [],
+                        });
+                        setOriginalStudent(null);
+                    }}
+                >
                     <Container maxWidth="sm" sx={{ mt: 10, bgcolor: 'background.paper', p: 4 }}>
                         <Typography variant="h5" gutterBottom>
                             Edit Student
                         </Typography>
                         {currentStudent && (
-                            <Box component="form" sx={{ mt: 2 }}>
+                            <Box component="form" sx={{ mt: 2, position: 'relative' }}>
                                 <TextField
                                     label="Name"
                                     name="name"
@@ -483,15 +510,19 @@ export default function Students() {
                                     value={currentStudent.price_per_lesson || ''}
                                     onChange={handleEditChange}
                                     required
-                                    slotProps={{
-                                        input: {
-                                            min: 0,
-                                            step: 0.01,
-                                        },
+                                    inputProps={{
+                                        min: 0,
+                                        step: 0.01,
                                     }}
                                 />
-                                {/* Subjects Selection */}
-                                <FormControl variant="outlined" fullWidth margin="normal" required>
+                                {/* Вибір предметів */}
+                                <FormControl
+                                    variant="outlined"
+                                    fullWidth
+                                    margin="normal"
+                                    required
+                                    error={!isEditFormValid() && currentStudent.subjects !== undefined}
+                                >
                                     <InputLabel id="subject-label">Subjects</InputLabel>
                                     <Select
                                         labelId="subject-label"
@@ -521,6 +552,9 @@ export default function Students() {
                                             </MenuItem>
                                         ))}
                                     </Select>
+                                    {!isEditFormValid() && currentStudent.subjects !== undefined && (
+                                        <FormHelperText>Будь ласка, виберіть хоча б один предмет.</FormHelperText>
+                                    )}
                                 </FormControl>
                                 <Button
                                     variant="contained"
@@ -528,17 +562,22 @@ export default function Students() {
                                     fullWidth
                                     sx={{ mt: 2 }}
                                     onClick={handleEditSubmit}
-                                    disabled={!hasStudentChanged()}
+                                    disabled={!hasStudentChanged() || !isEditFormValid() || editLoading}
                                 >
-                                    Save
+                                    {editLoading ? (
+                                        <CircularProgress size={24} color="inherit" />
+                                    ) : (
+                                        'Save'
+                                    )}
                                 </Button>
+                                {editLoading && <LoadingOverlay />}
                             </Box>
                         )}
                     </Container>
                 </Fade>
             </Modal>
 
-            {/* Add Payment Modal */}
+            {/* Модальне вікно додавання платежу */}
             <Modal
                 open={openPaymentModal}
                 onClose={handlePaymentModalClose}
@@ -549,7 +588,7 @@ export default function Students() {
                         <Typography variant="h5" gutterBottom>
                             Add Payment
                         </Typography>
-                        <Box component="form" sx={{ mt: 2 }}>
+                        <Box component="form" sx={{ mt: 2, position: 'relative' }}>
                             <TextField
                                 label="Amount"
                                 name="amount"
@@ -587,10 +626,15 @@ export default function Students() {
                                 fullWidth
                                 sx={{ mt: 2 }}
                                 onClick={handlePaymentSubmit}
-                                disabled={!isPaymentFormValid()}
+                                disabled={!isPaymentFormValid() || paymentLoading}
                             >
-                                Add Payment
+                                {paymentLoading ? (
+                                    <CircularProgress size={24} color="inherit" />
+                                ) : (
+                                    'Add Payment'
+                                )}
                             </Button>
+                            {paymentLoading && <LoadingOverlay />}
                         </Box>
                     </Container>
                 </Fade>

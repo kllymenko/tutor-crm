@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ua.klymenko.tutor_crm.dto.PaymentDto;
+import ua.klymenko.tutor_crm.dto.PaymentDTO;
 import ua.klymenko.tutor_crm.entities.Payment;
 import ua.klymenko.tutor_crm.entities.Student;
 import ua.klymenko.tutor_crm.entities.User;
@@ -38,17 +38,17 @@ public class PaymentController {
 
 
     @PostMapping
-    public ResponseEntity<PaymentDto> createPayment(@AuthenticationPrincipal User user, @RequestBody PaymentDto paymentDto) {
+    public ResponseEntity<PaymentDTO> createPayment(@AuthenticationPrincipal User user, @RequestBody PaymentDTO paymentDto) {
         Student existingStudent = studentService.getById(paymentDto.getStudentId()).orElseThrow(()
                 -> new EntityNotFoundException("Student not found with id: " + paymentDto.getStudentId()));
         Payment payment = modelMapper.map(paymentDto, Payment.class);
         payment.setStudent(existingStudent);
         payment = paymentService.save(payment);
-        return ResponseEntity.ok(modelMapper.map(payment, PaymentDto.class));
+        return ResponseEntity.ok(modelMapper.map(payment, PaymentDTO.class));
     }
 
     @PutMapping("/{id}")
-    public Payment updatePayment(@PathVariable("id") Long paymentId, @RequestBody PaymentDto paymentDto) {
+    public Payment updatePayment(@PathVariable("id") Long paymentId, @RequestBody PaymentDTO paymentDto) {
         if (!paymentId.equals(paymentDto.getId())) {
             throw new IllegalArgumentException("User ID in path must match the ID in the request body");
         }

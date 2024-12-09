@@ -30,8 +30,18 @@ public class Lesson {
     private Subject subject;
 
     @NotNull
-    @ManyToMany(mappedBy = "lessons")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "student_lesson",
+            joinColumns = @JoinColumn(name = "lesson_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
     private Set<Student> students;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @NotNull
     @Column(name = "time_end", nullable = false)

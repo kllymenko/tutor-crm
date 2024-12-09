@@ -42,6 +42,12 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public Student update(Student student) {
+        student.setUpdatedAt(Instant.now());
+        return studentRepository.save(student);
+    }
+
+    @Override
     public void delete(long id) {
         studentRepository.deleteById(id);
     }

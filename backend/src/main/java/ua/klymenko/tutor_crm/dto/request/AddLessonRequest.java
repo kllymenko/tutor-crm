@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Set;
 
 @Getter
@@ -13,25 +13,27 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddStudentRequest {
+public class AddLessonRequest {
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String name;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String surname;
+    @JsonProperty("subject_id")
+    private Long subjectId;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String phone;
+    @JsonProperty("student_ids")
+    private Set<Long> studentIds;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("price_per_lesson")
-    private BigDecimal pricePerLesson;
+    @JsonProperty("time_end")
+    private Instant timeEnd;
 
     @NotNull
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("subject_ids")
-    private Set<Long> subjectIds;
+    @JsonProperty("time_start")
+    private Instant timeStart;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String summary;
 }

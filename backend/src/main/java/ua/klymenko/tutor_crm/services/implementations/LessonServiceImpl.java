@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.klymenko.tutor_crm.entities.Lesson;
 import ua.klymenko.tutor_crm.entities.Student;
+import ua.klymenko.tutor_crm.entities.User;
+import ua.klymenko.tutor_crm.entities.enums.LessonStatus;
 import ua.klymenko.tutor_crm.repositories.LessonRepository;
 import ua.klymenko.tutor_crm.repositories.StudentRepository;
 import ua.klymenko.tutor_crm.services.interfaces.LessonService;
@@ -30,20 +32,16 @@ public class LessonServiceImpl implements LessonService {
     @Override
     @Transactional
     public Lesson save(Lesson lesson) {
-        Set<Student> students = lesson.getStudents();
-        if (students == null || students.isEmpty()) {
-            throw new RuntimeException("Lesson must have at least one student.");
-        }
         long lessonDurationMinutes = lesson.getTimeStart().until(lesson.getTimeEnd(), ChronoUnit.MINUTES);
 
-        for (Student student : students) {
+        for (Student student : lesson.getStudents()) {
             BigDecimal lessonPrice = student.getPricePerLesson()
                     .multiply(BigDecimal.valueOf(lessonDurationMinutes))
                     .divide(BigDecimal.valueOf(60), BigDecimal.ROUND_HALF_UP);
             student.setBalance(student.getBalance().subtract(lessonPrice));
-            studentRepository.save(student);
         }
 
+        lesson.setStatus(LessonStatus.PLANNED);
         lesson.setCreatedAt(Instant.now());
         lesson.setUpdatedAt(Instant.now());
         return lessonRepository.save(lesson);
@@ -63,5 +61,16 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public List<Lesson> getAll() {
         return lessonRepository.findAll();
+    }
+
+    @Override
+    public Lesson update(Lesson lesson) {
+        lesson.setUpdatedAt(Instant.now());
+        return lessonRepository.save(lesson);
+    }
+
+    @Override
+    public List<Lesson> getAllByUser(User user) {
+        return lessonRepository.findByUserId(user.getId());
     }
 }

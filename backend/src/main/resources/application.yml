@@ -30,5 +30,5 @@ security:
     token:
       secret: ${JWT_KEY}
       expiration:
-        access: 1
-        refresh: 2
+        access: 60
+        refresh: 1200
